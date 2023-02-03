@@ -1,3 +1,4 @@
+import { changeActiveBtn, stop } from "./control.js";
 import { state } from "./state.js";
 
 const titleElem = document.querySelector('.title');
@@ -23,15 +24,29 @@ const addTodo = (title) => {
         pomodoro: 0,
         id: Math.random().toString(16).substring(2,8),
     };
-
     const todoList = getTodo();
     todoList.push(todo);
-
     localStorage.setItem('pomodoro', JSON.stringify(todoList));
     return todo;
 };
+// -----------Обновление todoList в localStorage---------------------
+const updateTodo = (todo) => {
+    const todoList = getTodo();
+    const todoItem = todoList.find(item => item.id === todo.id);
+    todoItem.title = todo.title;
+    todoItem.pomodoro = todo.pomodoro;
+    localStorage.setItem('pomodoro', JSON.stringify(todoList));
+};
+// --------------deleteTodo------------------
+const deleteTodo = (todo) => {
+    const todoList = getTodo();
+    const newTodoList = todoList.filter(item => item.id !== todo.id);
+    if(todo.id === state.activeTodo.id) {
+        state.activeTodo = newTodoList[newTodoList.length -1];
+    }
+    localStorage.setItem('pomodoro', JSON.stringify(newTodoList));
+};
 // --------------------------------
-
 const createTodoListItem = (todo) => {
     if (todo.id !== 'default') {
         const todoItem = document.createElement('li');
@@ -58,9 +73,30 @@ const createTodoListItem = (todo) => {
 
         todoListElem.prepend(todoItem);
 
-        // todoBtn.addEventListener('click', () => {});
-        // editBtn.addEventListener('click', () => {});
-        // delBtn.addEventListener('click', () => {});
+        todoBtn.addEventListener('click', () => {
+            state.activeTodo = todo;
+            showTodo();
+            changeActiveBtn('work');
+            stop();
+        });
+
+        editBtn.addEventListener('click', () => {
+            todo.title = prompt('Название задачи', todo.title);
+            todoBtn.textContent = todo.title;
+            if (todo.id === state.activeTodo.id) {
+                state.activeTodo.title = todo.title;
+            }
+            updateTodo(todo);
+            showTodo();
+        });
+
+        delBtn.addEventListener('click', () => {
+            deleteTodo(todo);
+            todoItem.remove();
+            showTodo();
+            
+        });
+
     }
 
 };
